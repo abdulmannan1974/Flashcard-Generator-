@@ -7,7 +7,7 @@ import {
   DeckStats,
   InputSource,
 } from './types';
-import { GeminiService } from './utils/geminiService';
+import { ClaudeService } from './utils/claudeService';
 import { downloadShareableHTML, copyDeckToClipboard } from './utils/shareUtils';
 import Header from './components/Header';
 import FileUpload from './components/FileUpload';
@@ -32,8 +32,8 @@ import {
 
 const App: React.FC = () => {
   // API Key
-  const [apiKey, setApiKey] = useState(process.env.GEMINI_API_KEY || '');
-  const [showApiInput, setShowApiInput] = useState(!process.env.GEMINI_API_KEY);
+  const [apiKey, setApiKey] = useState('');
+  const [showApiInput, setShowApiInput] = useState(true);
 
   // Cards state
   const [cards, setCards] = useState<Flashcard[]>([]);
@@ -52,20 +52,20 @@ const App: React.FC = () => {
   // Settings
   const [showSettings, setShowSettings] = useState(false);
 
-  const geminiServiceRef = useRef<GeminiService | null>(null);
+  const claudeServiceRef = useRef<ClaudeService | null>(null);
 
   const getService = useCallback(() => {
-    if (!geminiServiceRef.current && apiKey) {
-      geminiServiceRef.current = new GeminiService(apiKey);
+    if (!claudeServiceRef.current && apiKey) {
+      claudeServiceRef.current = new ClaudeService(apiKey);
     }
-    return geminiServiceRef.current;
+    return claudeServiceRef.current;
   }, [apiKey]);
 
   // Handle text extracted from file upload
   const handleTextExtracted = async (text: string, source: InputSource, fileName: string) => {
     const service = getService();
     if (!service) {
-      setError('Please enter your Gemini API key first.');
+      setError('Please enter your Claude API key first.');
       setShowApiInput(true);
       return;
     }
@@ -196,12 +196,12 @@ const App: React.FC = () => {
           <div className="max-w-xl mx-auto mb-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-3">
               <Settings size={18} className="text-blood-600" />
-              <h3 className="font-bold text-gray-800">Gemini API Key</h3>
+              <h3 className="font-bold text-gray-800">Claude API Key</h3>
             </div>
             <p className="text-xs text-gray-500 mb-4">
-              Enter your Google Gemini API key to power flashcard generation. Get yours at{' '}
-              <a href="https://ai.google.dev" target="_blank" rel="noopener" className="text-blood-600 underline">
-                ai.google.dev
+              Enter your Anthropic Claude API key to power flashcard generation. Get yours at{' '}
+              <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" className="text-blood-600 underline">
+                console.anthropic.com
               </a>
             </p>
             <div className="flex gap-2">
@@ -210,9 +210,9 @@ const App: React.FC = () => {
                 value={apiKey}
                 onChange={(e) => {
                   setApiKey(e.target.value);
-                  geminiServiceRef.current = null;
+                  claudeServiceRef.current = null;
                 }}
-                placeholder="Enter your Gemini API key..."
+                placeholder="Enter your Claude API key (sk-ant-...)..."
                 className="flex-1 p-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blood-100 focus:border-blood-500 text-sm outline-none"
               />
               <button
